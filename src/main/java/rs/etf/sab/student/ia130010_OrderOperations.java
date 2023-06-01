@@ -308,10 +308,12 @@ public class ia130010_OrderOperations implements OrderOperations {
             return new BigDecimal(-1).setScale(3);
         }
         Connection connection = DBUtils.getInstance().getConnection();
-        String query = "{ CALL SP_FINAL_PRICE (?, ?) }";
+        long currentTime = this.generalOperations.getCurrentTime().getTimeInMillis();
+        String query = "{ CALL SP_FINAL_PRICE (?, ?, ?) }";
         try (CallableStatement callableStatement = connection.prepareCall(query)) {
             callableStatement.setInt(1, orderId);
             callableStatement.registerOutParameter(2, Types.DECIMAL);
+            callableStatement.setDate(3, new java.sql.Date(currentTime));
             callableStatement.execute();
             return callableStatement.getBigDecimal(2).setScale(3);
         } catch (SQLException e) {
@@ -337,9 +339,11 @@ public class ia130010_OrderOperations implements OrderOperations {
             return new BigDecimal(-1).setScale(3);
         }
         Connection connection = DBUtils.getInstance().getConnection();
-        String query = "{ ? = CALL dbo.fn_CalculateDiscount(?) }";
+        long currentTime = this.generalOperations.getCurrentTime().getTimeInMillis();
+        String query = "{ ? = CALL dbo.fn_CalculateDiscount(?, ?) }";
         try (CallableStatement callableStatement = connection.prepareCall(query);) {
             callableStatement.setInt(2, orderId);
+            callableStatement.setDate(3, new java.sql.Date(currentTime));
             callableStatement.registerOutParameter(1, Types.DECIMAL);
             callableStatement.execute();
             return callableStatement.getBigDecimal(1).setScale(3);

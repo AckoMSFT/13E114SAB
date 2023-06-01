@@ -15,6 +15,13 @@ public class ia130010_GeneralOperations implements GeneralOperations {
         currentTime = null;
     }
 
+    /*
+        void setInitialTime(java.util.Calendar time)
+        Sets initial time
+
+        Parameters:
+        time - time
+     */
     @Override
     public void setInitialTime(Calendar time) {
         currentTime = Calendar.getInstance();
@@ -22,6 +29,16 @@ public class ia130010_GeneralOperations implements GeneralOperations {
         currentTime.setTimeInMillis(time.getTimeInMillis());
     }
 
+    /*
+        java.util.Calendar time(int days)
+        Time to pass in simulation.
+
+        Parameters:
+        days - number of days that will pass in simulation after this method call
+
+        Returns:
+        current time
+     */
     @Override
     public Calendar time(int days) {
         currentTime.add(Calendar.DAY_OF_MONTH, days);
@@ -142,7 +159,7 @@ public class ia130010_GeneralOperations implements GeneralOperations {
                                     break;
                                 }
                                 // We need to remove the items from transit and put the order in transit
-                                String removeItemsFromTransitQuery = "DELETE FROM Transit WHERE OrderId = " + orderId + " AND Type = " + OrderHelper.TransitType.ITEM.getType();
+                                String removeItemsFromTransitQuery = "DELETE FROM [dbo].[Transit] WHERE OrderId = " + orderId + " AND Type = " + OrderHelper.TransitType.ITEM.getType();
                                 try (Statement removeItemsFromTransitStatement = connection.createStatement()) {
                                     removeItemsFromTransitStatement.executeUpdate(removeItemsFromTransitQuery);
                                 }
@@ -242,6 +259,13 @@ public class ia130010_GeneralOperations implements GeneralOperations {
         return currentTime;
     }
 
+    /*
+        java.util.Calendar getCurrentTime()
+        Gets current time
+
+        Returns:
+        current time
+     */
     @Override
     public Calendar getCurrentTime() {
         return currentTime;
