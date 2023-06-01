@@ -120,4 +120,19 @@ public class AckoTest {
         Assert.assertEquals(-1L, invalidEdgeId);
         // Violation of UNIQUE KEY constraint 'XAK1ConnectedCitiesUniqueEdge'. Cannot insert duplicate key in object 'dbo.ConnectedCities'. The duplicate key value is (1, 2).
     }
+
+    @Test
+    public void testUniqueShopName() {
+        int cityKragujevac = this.cityOperations.createCity("Kragujevac");
+        Assert.assertNotEquals(-1L, cityKragujevac);
+        int shopGigatron = this.shopOperations.createShop("Gigatron", "Kragujevac");
+        Assert.assertNotEquals(-1L, shopGigatron);
+        shopGigatron = this.shopOperations.createShop("Gigatron", "Kragujevac");
+        Assert.assertEquals(-1L, shopGigatron);
+        int cityBeograd = this.cityOperations.createCity("Beograd");
+        Assert.assertNotEquals(-1L, cityBeograd);
+        shopGigatron = this.shopOperations.createShop("Gigatron", "Beograd");
+        Assert.assertEquals(-1L, shopGigatron);
+        // Violation of UNIQUE KEY constraint 'XAK1ShopUniqueName'. Cannot insert duplicate key in object 'dbo.Shop'. The duplicate key value is 'Gigatron'.
+    }
 }

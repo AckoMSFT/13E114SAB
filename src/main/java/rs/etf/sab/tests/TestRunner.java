@@ -186,9 +186,10 @@ public final class TestRunner {
         return res;
     }
     public static void runTests() {
-        double resultsPublic = runPublic();
-        System.out.println("Points won on public tests is: " + resultsPublic + " out of 10");
         double resultsAcko = runAcko();
         System.out.println("Points won on Acko's tests is: " + resultsAcko);
+
+        double resultsPublic = runPublic();
+        System.out.println("Points won on public tests is: " + resultsPublic + " out of 10");
     }
 }

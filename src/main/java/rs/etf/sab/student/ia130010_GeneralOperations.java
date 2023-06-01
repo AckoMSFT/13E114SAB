@@ -247,11 +247,15 @@ public class ia130010_GeneralOperations implements GeneralOperations {
         return currentTime;
     }
 
+    /*
+        void eraseAll()
+        Clears data in database.
+     */
     @Override
     public void eraseAll() {
-        String disableAllContraints = "EXEC sp_MSForEachTable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
+        String disableAllConstraints = "EXEC sp_MSForEachTable 'ALTER TABLE ? NOCHECK CONSTRAINT ALL'";
         String disableAllTriggers = "EXEC sp_MSForEachTable 'ALTER TABLE ? DISABLE TRIGGER ALL'";
-        String truncateAllTables = "EXEC sp_MSForEachTable 'DELETE FROM ?'";
+        String deleteAllFromTables = "EXEC sp_MSForEachTable 'DELETE FROM ?'";
         String enableAllTriggers = "EXEC sp_MSForEachTable 'ALTER TABLE ? ENABLE TRIGGER ALL'";
         String enableAllConstraints = "EXEC sp_MSForEachTable 'ALTER TABLE ? WITH CHECK CHECK CONSTRAINT ALL'";
         String reseedAllIdentities = "EXEC sp_MSForEachTable \"DBCC CHECKIDENT ( '?', RESEED, 0)\"";
@@ -259,9 +263,9 @@ public class ia130010_GeneralOperations implements GeneralOperations {
         Connection connection = DBUtils.getInstance().getConnection();
         try (Statement statement = connection.createStatement()) {
             connection.setAutoCommit(false);
-            statement.addBatch(disableAllContraints);
+            statement.addBatch(disableAllConstraints);
             statement.addBatch(disableAllTriggers);
-            statement.addBatch(truncateAllTables);
+            statement.addBatch(deleteAllFromTables);
             statement.addBatch(enableAllTriggers);
             statement.addBatch(enableAllConstraints);
             statement.addBatch(reseedAllIdentities);

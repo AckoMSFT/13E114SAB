@@ -5,7 +5,14 @@ import rs.etf.sab.operations.BuyerOperations;
 public class OrderHelper {
 
     static BuyerOperations buyerOperations = new ia130010_BuyerOperations();
-    public static enum OrderState
+
+    /*
+        Order can have 3 possible states:
+            - created
+            - sent
+            - arrived
+     */
+    public enum OrderState
     {
         CREATED("created"),
         SENT("sent"),
@@ -22,7 +29,12 @@ public class OrderHelper {
         }
     }
 
-    public static enum TransactionType
+    /*
+        Transaction can have 2 possible types:
+            - buyer
+            - shop
+     */
+    public enum TransactionType
     {
         BUYER(0),
         SHOP(1);
@@ -37,7 +49,12 @@ public class OrderHelper {
         }
     }
 
-    public static enum TransitType
+    /*
+        Transit can have 2 different types:
+            - item
+            - order
+     */
+    public enum TransitType
     {
         ITEM(0),
         ORDER(1);
@@ -52,15 +69,23 @@ public class OrderHelper {
         }
     }
 
-
+    /*
+        Checks if the order has been completed
+     */
     public static boolean isOrderCompleted(String state) {
         return !state.equals(OrderState.CREATED.getState());
     }
 
+    /*
+        For a given order with given buyerId finds the destination city (city of the buyer)
+     */
     public static int getOrderDestinationCity(int buyerId) {
         return buyerOperations.getCity(buyerId);
     }
 
+    /*
+        Returns city of the buyer
+     */
     public static int getBuyerCity(int buyerId) {
         return buyerOperations.getCity(buyerId);
     }

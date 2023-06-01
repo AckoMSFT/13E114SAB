@@ -18,6 +18,18 @@ public class ia130010_OrderOperations implements OrderOperations {
         this.generalOperations = generalOperations;
     }
 
+    /*
+        int addArticle(int orderId, int articleId, int count)
+        Adds article to order. It adds articles only if there are enough of them in shop. If article is in order already, it only increases count.
+
+        Parameters:
+        orderId - order id
+        articleId - article id
+        count - number of articles to be added
+
+        Returns:
+        item id (item contains information about number of article instances in particular order), -1 if failure
+     */
     @Override
     public int addArticle(int orderId, int articleId, int count) {
         // TODO (acko): Check if shops have capacity
@@ -63,6 +75,17 @@ public class ia130010_OrderOperations implements OrderOperations {
         return itemId;
     }
 
+    /*
+        int removeArticle(int orderId, int articleId)
+        Removes article from order.
+
+        Parameters:
+        orderId - order id
+        articleId - article id
+
+        Returns:
+        1 if success, -1 if failure
+     */
     @Override
     public int removeArticle(int orderId, int articleId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -84,8 +107,8 @@ public class ia130010_OrderOperations implements OrderOperations {
         try (PreparedStatement preparedStatement = connection.prepareStatement(increaseArticleCountQuery)) {
             preparedStatement.setInt(1, orderArticleCount);
             preparedStatement.setInt(2, articleId);
-            int success = preparedStatement.executeUpdate();
-            if (success != 1) {
+            int rowCount = preparedStatement.executeUpdate();
+            if (rowCount != 1) {
                 return -1;
             }
         } catch (SQLException e) {
@@ -95,25 +118,45 @@ public class ia130010_OrderOperations implements OrderOperations {
         return 1;
     }
 
+    /*
+        java.util.List<java.lang.Integer> getItems(int orderId)
+        Get all items for order.
+
+        Parameters:
+        orderId - order's id
+
+        Returns:
+        list of item ids for an order
+     */
     @Override
     public List<Integer> getItems(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
-        String query = "SELECT Id FROM [dbo].[Item] WHERE OrderId = " + orderId;
-        ArrayList<Integer> ids = new ArrayList<>();
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
-            if (!resultSet.next()) return null;
-            ids.add(resultSet.getInt(1));
-            while (resultSet.next()) {
-                ids.add(resultSet.getInt(1));
+        String query = "SELECT Id FROM [dbo].[Item] WHERE OrderId = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, orderId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                ArrayList<Integer> ids = new ArrayList<>();
+                while (resultSet.next()) {
+                    ids.add(resultSet.getInt(1));
+                }
+                return ids;
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
         }
-        return ids;
     }
 
+    /*
+        int completeOrder(int orderId)
+        Sends order to the system. Order will be immediately sent.
+
+        Parameters:
+        orderId - oreder id
+
+        Returns:
+        1 if success, -1 if failure
+     */
     @Override
     public int completeOrder(int orderId) {
         int buyerId = getBuyer(orderId);
@@ -248,6 +291,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         return 1;
     }
 
+    /*
+        java.math.BigDecimal getFinalPrice(int orderId)
+        Gets calculated final price after all discounts.
+
+        Parameters:
+        orderId - order id
+
+        Returns:
+        final price. Sum that buyer have to pay. -1 if failure or if order is not completed
+     */
     @Override
     public BigDecimal getFinalPrice(int orderId) {
         String state = getState(orderId);
@@ -267,6 +320,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        java.math.BigDecimal getDiscountSum(int orderId)
+        Gets calculated discount for the order
+
+        Parameters:
+        orderId - order id
+
+        Returns:
+        total discount, -1 if failure or if order is not completed
+     */
     @Override
     public BigDecimal getDiscountSum(int orderId) {
         String state = getState(orderId);
@@ -286,6 +349,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         return new BigDecimal(-1).setScale(3);
     }
 
+    /*
+        java.lang.String getState(int orderId)
+        Gets state of the order.
+
+        Parameters:
+        orderId - order's id
+
+        Returns:
+        state of the order
+     */
     @Override
     public String getState(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -304,6 +377,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        java.util.Calendar getSentTime(int orderId)
+        Gets order's sending time
+
+        Parameters:
+        orderId - order's id
+
+        Returns:
+        order's sending time, null if failure
+     */
     @Override
     public Calendar getSentTime(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -329,6 +412,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        java.util.Calendar getRecievedTime(int orderId)
+        Gets time when order arrived to buyer's city.
+
+        Parameters:
+        orderId - order id
+
+        Returns:
+        order's recieve time, null if failure
+     */
     @Override
     public Calendar getRecievedTime(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -354,6 +447,16 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        int getBuyer(int orderId)
+        Gets buyer.
+
+        Parameters:
+        orderId - order's id
+
+        Returns:
+        buyer's id
+     */
     @Override
     public int getBuyer(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -372,6 +475,18 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        int getLocation(int orderId)
+        Gets location for an order. If order is assembled and order is moving from city C1 to city C2 then location of an order is city C1.
+        If order is not yet assembled then location of the order is location of the shop (associated with order) that is closest to buyer's city.
+        If order is in state "created" then location is -1.
+
+        Parameters:
+        orderId - order's id
+
+        Returns:
+        id of city, -1 if failure
+     */
     @Override
     public int getLocation(int orderId) {
         String state = getState(orderId);
@@ -402,6 +517,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         return -1;
     }
 
+    /*
+        Finds the shortest path for the order
+     */
     @Override
     public void findShortestPath(int orderId, int orderAssemblyCity, int orderDestinationCity) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -417,6 +535,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Gets the path for the order
+     */
     @Override
     public List<Integer> getPath(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -440,6 +561,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Gets article count for the order and article id
+     */
     @Override
     public int getArticleCount(int orderId, int articleId) {
         Connection connection = DBUtils.getInstance().getConnection();
@@ -458,6 +582,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Gets item id for the given order id and article id
+     */
     public int getItemId(int orderId, int articleId) {
         Connection connection = DBUtils.getInstance().getConnection();
         String query = "SELECT Id FROM [dbo].[Item] WHERE OrderId = " + orderId + " AND ArticleId = " + articleId;
@@ -475,6 +602,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Gets article count
+     */
     public int getShopArticleCount(int articleId) {
         Connection connection = DBUtils.getInstance().getConnection();
         String query = "SELECT Count FROM [dbo].[Article] WHERE Id = " + articleId;
@@ -492,6 +622,9 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Updates shop article count
+     */
     public int updateShopArticleCount(int articleId, int increment) {
         Connection connection = DBUtils.getInstance().getConnection();
         String query = "UPDATE [dbo].[Article] SET Count = Count + ? WHERE Id = ?";
@@ -506,16 +639,20 @@ public class ia130010_OrderOperations implements OrderOperations {
         }
     }
 
+    /*
+        Retrieves the city where the order is being assembled
+     */
     public int getOrderAssemblyCity(int orderId) {
         Connection connection = DBUtils.getInstance().getConnection();
-        String query = "SELECT AssemblyCityId FROM [dbo].[Order] WHERE Id = " + orderId;
-        try (Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(query)) {
-            if (resultSet.next()) {
-                return resultSet.getInt(1);
-            }
-            else {
-                return -1;
+        String query = "SELECT AssemblyCityId FROM [dbo].[Order] WHERE Id = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, orderId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                } else {
+                    return -1;
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
