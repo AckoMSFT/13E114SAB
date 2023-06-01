@@ -91,4 +91,33 @@ public class AckoTest {
         articlePS5Count = this.orderOperations.getArticleCount(orderAcko, articlePS5);
         Assert.assertEquals(articlePS5Count, 0);
     }
+
+    @Test
+    public void testUniqueCityName() {
+        int cityKragujevac = this.cityOperations.createCity("Kragujevac");
+        int cityKragujevacAgain = this.cityOperations.createCity("Kragujevac");
+        Assert.assertNotEquals(-1L, cityKragujevac);
+        Assert.assertEquals(-1L, cityKragujevacAgain);
+        /*
+            com.microsoft.sqlserver.jdbc.SQLServerException: Violation of UNIQUE KEY constraint 'XAK1CityUniqueName'.
+            Cannot insert duplicate key in object 'dbo.City'. The duplicate key value is (Kragujevac).
+         */
+    }
+
+    @Test
+    public void testUniqueEdges() {
+        int cityKragujevac = this.cityOperations.createCity("Kragujevac");
+        int cityBeograd = this.cityOperations.createCity("Beograd");
+        Assert.assertNotEquals(-1L, cityKragujevac);
+        Assert.assertNotEquals(-1L, cityBeograd);
+        int edgeId = this.cityOperations.connectCities(cityBeograd, cityKragujevac, 5);
+        Assert.assertNotEquals(-1L, edgeId);
+        int invalidEdgeId = this.cityOperations.connectCities(cityBeograd, cityKragujevac, 5);
+        Assert.assertEquals(-1L, invalidEdgeId);
+        invalidEdgeId = this.cityOperations.connectCities(cityBeograd, cityKragujevac, 10);
+        Assert.assertEquals(-1L, invalidEdgeId);
+        invalidEdgeId = this.cityOperations.connectCities(cityKragujevac, cityBeograd, 5);
+        Assert.assertEquals(-1L, invalidEdgeId);
+        // Violation of UNIQUE KEY constraint 'XAK1ConnectedCitiesUniqueEdge'. Cannot insert duplicate key in object 'dbo.ConnectedCities'. The duplicate key value is (1, 2).
+    }
 }
