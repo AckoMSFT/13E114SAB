@@ -89,6 +89,11 @@ BEGIN
 	WHERE [Transaction].OrderId = [Order].Id AND [Order].BuyerId = @BuyerId AND [Transaction].[Type] = 0
 		AND DATEDIFF(day, [Transaction].ExecutionTime, @CurrentTime) BETWEEN 0 AND 30
 
+	IF @TotalSpent > 10000
+	BEGIN
+		SET @Discount = @Discount + 0.2 * @FullPrice
+	END
+
 	-- Return the result of the function
 	RETURN @Discount
 
