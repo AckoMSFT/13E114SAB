@@ -91,7 +91,7 @@ BEGIN
 
 	IF @TotalSpent > 10000
 	BEGIN
-		SET @Discount = @Discount + 0.2 * @FullPrice
+		SET @Discount = @Discount + 0.02 * @FullPrice
 	END
 
 	-- Return the result of the function
